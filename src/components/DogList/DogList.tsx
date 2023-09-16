@@ -1,13 +1,7 @@
 import React from 'react';
 import DogCard from '../DogCard/DogCard';
+import { Dog } from '../../types/types';
 
-interface Dog {
-  id: string;
-  name: string;
-  breed: string;
-  image: string;
-  favorite?: boolean;
-}
 
 interface DogListProps {
   dogs: Dog[];
@@ -23,7 +17,7 @@ const DogList: React.FC<DogListProps> = ({ dogs, favorites, onFavorite }) => {
             key={dog.id}
             name={dog.name}
             breed={dog.breed}
-            image={dog.image}
+            img={dog.img}
             favorite={favorites.some(favDog => favDog.id === dog.id)}
             onFavorite={() => onFavorite && onFavorite(dog)}
           />

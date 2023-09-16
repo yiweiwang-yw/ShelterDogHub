@@ -7,21 +7,16 @@ import {
     Button,
     SelectChangeEvent,
 } from "@mui/material";
-import DogList from "../components/DogList/DogList";
-import { getBreeds, searchDogs, getDogs, matchDogs } from "../api/dogs";
-import CustomPagination from "../components/Pagination/CustomPagination";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import DogList from "../components/DogList/DogList";
+import { Dog } from "../types/types";
+import { getBreeds, searchDogs, getDogs, matchDogs } from "../api/dogs";
+import CustomPagination from "../components/Pagination/CustomPagination";
 
-interface Dog {
-    id: string;
-    name: string;
-    breed: string;
-    image: string;
-    favorite?: boolean;
-}
+
 
 const DogSearchPage: React.FC = () => {
     const [breeds, setBreeds] = useState<string[]>([]);
@@ -58,13 +53,13 @@ const DogSearchPage: React.FC = () => {
                 nextCursor
             );
 
-            console.log(response.data);
             setNextCursor(getCursorFromQueryString(response.data.next));
             setPrevCursor(getCursorFromQueryString(response.data.prev));
 
             if (response.data.resultIds.length > 0) {
                 const dogDetails = await getDogs(response.data.resultIds);
                 setDogs(dogDetails.data);
+                console.log(dogDetails.data);
             }
         }
         fetchDogs();
