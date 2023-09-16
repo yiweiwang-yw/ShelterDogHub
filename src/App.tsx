@@ -1,21 +1,21 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Login from './components/Login/Login';
-import DogSearchPage from './pages/DogSearchPage'; // Assuming you'll create this next
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { CssBaseline } from '@mui/material';
+import LoginPage from './pages/LoginPage';
+import DogSearchPage from './pages/DogSearchPage';
 
-const App = () => {
-  return (
-    <Router>
-      <Switch>
-        <Route path="/dog-search">
-          <DogSearchPage />
-        </Route>
-        <Route path="/">
-          <Login />
-        </Route>
-      </Switch>
-    </Router>
-  );
+function App() {
+    return (
+        <>
+            <CssBaseline />
+            <Router>
+                <Routes>
+                    <Route path="/" element={<LoginPage />} />
+                    <Route path="/search" element={<DogSearchPage />} />
+                </Routes>
+            </Router>
+        </>
+    );
 }
 
 export default App;

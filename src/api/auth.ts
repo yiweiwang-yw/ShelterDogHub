@@ -1,17 +1,19 @@
-const BASE_URL = 'https://frontend-take-home-service.fetch.com';
+import api from './index';
 
-export const loginUser = async (name: string, email: string) => {
-  const response = await fetch(`${BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ name, email }),
-    credentials: 'include', // This is needed to handle cookies.
-  });
-
-  if (!response.ok) {
-    throw new Error('Login failed.');
+export const login = async (name: string, email: string) => {
+  try {
+    const response = await api.post('/auth/login', { name, email });
+    return response.data;
+  } catch (error) {
+    throw error;
   }
-  return response.json();
-};
+}
+
+export const logout = async () => {
+  try {
+    const response = await api.post('/auth/logout');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
