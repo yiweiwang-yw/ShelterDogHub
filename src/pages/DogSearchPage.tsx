@@ -12,6 +12,8 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import DogList from "../components/DogList/DogList";
 import { Dog } from "../types/types";
 import { getBreeds, searchDogs, getDogs, matchDogs } from "../api/dogs";
@@ -29,6 +31,8 @@ const DogSearchPage: React.FC = () => {
     const [matchedDog, setMatchedDog] = useState<Dog | null>(null);
     const [isMatchDialogOpen, setIsMatchDialogOpen] = useState<boolean>(false);
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [favoritesDialogOpen, setFavoritesDialogOpen] =
+        useState<boolean>(false);
 
     useEffect(() => {
         async function fetchBreeds() {
@@ -55,6 +59,13 @@ const DogSearchPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        const storedFavorites = sessionStorage.getItem("favorites");
+        if (storedFavorites) {
+            setFavorites(JSON.parse(storedFavorites) as Dog[]);
+        }
+    }, []);
+
+    useEffect(() => {
         async function fetchDogs() {
             const response = await searchDogs(
                 selectedBreed ? [selectedBreed] : [],
@@ -64,6 +75,7 @@ const DogSearchPage: React.FC = () => {
                 25,
                 nextCursor
             );
+            console.log(response);
 
             setNextCursor(getCursorFromQueryString(response.data.next));
             setPrevCursor(getCursorFromQueryString(response.data.prev));
@@ -109,9 +121,16 @@ const DogSearchPage: React.FC = () => {
 
     const toggleFavorite = (dog: Dog) => {
         const isFavorite = favorites.some((favDog) => favDog.id === dog.id);
-        setFavorites((prev) =>
-            isFavorite ? prev.filter((f) => f.id !== dog.id) : [...prev, dog]
-        );
+        const newFavorites = isFavorite
+            ? favorites.filter((f) => f.id !== dog.id)
+            : [...favorites, dog];
+
+        setFavorites(newFavorites);
+        if (newFavorites.length === 0) {
+            setFavoritesDialogOpen(false);
+        }
+
+        sessionStorage.setItem("favorites", JSON.stringify(newFavorites));
     };
 
     const findMatch = async () => {
@@ -163,14 +182,60 @@ const DogSearchPage: React.FC = () => {
                     <MenuItem value="desc">Descending</MenuItem>
                 </Select>
             </Box>
-            {matchedDog && (
-                <Box className="ml-4">
-                    <Typography variant="subtitle1">Matched Dog:</Typography>
-                    <Typography>
-                        {matchedDog.name} - {matchedDog.breed}
-                    </Typography>
-                </Box>
-            )}
+
+            <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                my={2}
+            >
+                {matchedDog && (
+                    <Box>
+                        <Typography variant="subtitle1">
+                            Matched Dog:
+                        </Typography>
+                        <Typography>
+                            {matchedDog.name} - {matchedDog.breed}
+                        </Typography>
+                    </Box>
+                )}
+                <Button
+                    onClick={() => setFavoritesDialogOpen(true)}
+                    disabled={favorites.length === 0}
+                >
+                    View Favorites
+                </Button>
+            </Box>
+
+            <Dialog
+                fullScreen
+                open={favoritesDialogOpen}
+                onClose={() => setFavoritesDialogOpen(false)}
+            >
+                <DialogTitle>
+                    Your Favorited Dogs
+                    <IconButton
+                        edge="end"
+                        color="inherit"
+                        onClick={() => setFavoritesDialogOpen(false)}
+                        aria-label="close"
+                        style={{
+                            position: "absolute",
+                            right: "8px",
+                            top: "8px",
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <DogList
+                        dogs={favorites}
+                        favorites={favorites}
+                        onFavorite={toggleFavorite}
+                    />
+                </DialogContent>
+            </Dialog>
 
             <DogList
                 dogs={sortedDogs}

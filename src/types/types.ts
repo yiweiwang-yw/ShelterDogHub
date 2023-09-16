@@ -3,6 +3,8 @@ export interface Dog {
     name: string;
     breed: string;
     img: string;
+    age: number;
+    zip_code: string;
     favorite?: boolean;
 }
 

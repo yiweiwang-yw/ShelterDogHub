@@ -17,6 +17,8 @@ const DogList: React.FC<DogListProps> = ({ dogs, favorites, onFavorite }) => {
                         name={dog.name}
                         breed={dog.breed}
                         img={dog.img}
+                        age={dog.age}
+                        zip_code={dog.zip_code}
                         favorite={favorites.some(
                             (favDog) => favDog.id === dog.id
                         )}
