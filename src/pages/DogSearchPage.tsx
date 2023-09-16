@@ -6,6 +6,7 @@ import {
     MenuItem,
     Button,
     SelectChangeEvent,
+    Box,
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -15,8 +16,6 @@ import DogList from "../components/DogList/DogList";
 import { Dog } from "../types/types";
 import { getBreeds, searchDogs, getDogs, matchDogs } from "../api/dogs";
 import CustomPagination from "../components/Pagination/CustomPagination";
-
-
 
 const DogSearchPage: React.FC = () => {
     const [breeds, setBreeds] = useState<string[]>([]);
@@ -29,6 +28,7 @@ const DogSearchPage: React.FC = () => {
     const [prevCursor, setPrevCursor] = useState<string | undefined>();
     const [matchedDog, setMatchedDog] = useState<Dog | null>(null);
     const [isMatchDialogOpen, setIsMatchDialogOpen] = useState<boolean>(false);
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
     useEffect(() => {
         async function fetchBreeds() {
@@ -41,6 +41,18 @@ const DogSearchPage: React.FC = () => {
         const params = new URLSearchParams(queryString);
         return params.get("from") || undefined;
     };
+
+    useEffect(() => {
+        const userData = sessionStorage.getItem("user");
+        if (userData) {
+            const { name, email } = JSON.parse(userData);
+            const key = `matchedDog-${name}-${email}`;
+            const storedMatchedDog = sessionStorage.getItem(key);
+            if (storedMatchedDog) {
+                setMatchedDog(JSON.parse(storedMatchedDog) as Dog);
+            }
+        }
+    }, []);
 
     useEffect(() => {
         async function fetchDogs() {
@@ -68,6 +80,11 @@ const DogSearchPage: React.FC = () => {
     const handleBreedChange = (event: SelectChangeEvent<string>) => {
         setSelectedBreed(event.target.value);
     };
+
+    const sortedDogs = [...dogs].sort((a, b) => {
+        const comparison = a.breed.localeCompare(b.breed);
+        return sortOrder === "asc" ? comparison : -comparison;
+    });
 
     const handleNext = () => {
         if (nextCursor) {
@@ -107,27 +124,56 @@ const DogSearchPage: React.FC = () => {
             (dog) => dog.id === match.data.match
         );
         if (matchedDogDetails) {
-            setMatchedDog(matchedDogDetails);
-            setIsMatchDialogOpen(true);
+            const userData = sessionStorage.getItem("user");
+            if (userData) {
+                const { name, email } = JSON.parse(userData);
+                const key = `matchedDog-${name}-${email}`;
+                setMatchedDog(matchedDogDetails);
+                sessionStorage.setItem(key, JSON.stringify(matchedDogDetails));
+                setIsMatchDialogOpen(true);
+            }
         }
     };
 
     return (
         <Container>
-            <Typography variant="h4" gutterBottom>
-                Dog Search
-            </Typography>
+            <Box className="flex items-center space-x-2">
+                <Typography variant="subtitle1">Breed:</Typography>
+                <Select
+                    value={selectedBreed || ""}
+                    onChange={handleBreedChange}
+                    style={{ minWidth: "150px" }}
+                >
+                    {breeds.map((breed) => (
+                        <MenuItem key={breed} value={breed}>
+                            {breed}
+                        </MenuItem>
+                    ))}
+                </Select>
 
-            <Select value={selectedBreed || ""} onChange={handleBreedChange}>
-                {breeds.map((breed) => (
-                    <MenuItem key={breed} value={breed}>
-                        {breed}
-                    </MenuItem>
-                ))}
-            </Select>
+                <Typography variant="subtitle1">Sort By:</Typography>
+                <Select
+                    value={sortOrder}
+                    onChange={(e) =>
+                        setSortOrder(e.target.value as "asc" | "desc")
+                    }
+                    style={{ minWidth: "150px" }}
+                >
+                    <MenuItem value="asc">Ascending</MenuItem>
+                    <MenuItem value="desc">Descending</MenuItem>
+                </Select>
+            </Box>
+            {matchedDog && (
+                <Box className="ml-4">
+                    <Typography variant="subtitle1">Matched Dog:</Typography>
+                    <Typography>
+                        {matchedDog.name} - {matchedDog.breed}
+                    </Typography>
+                </Box>
+            )}
 
             <DogList
-                dogs={dogs}
+                dogs={sortedDogs}
                 favorites={favorites}
                 onFavorite={toggleFavorite}
             />
