@@ -51,5 +51,5 @@ Multiple error handlings were also added.
 
 1. Clone the repository.
 2. Install the dependencies with `yarn install`.
-3. Run the application with `yarn run start`.
-4. (Optional) Run the tests with `yarn run test`.
+3. Run the application with `yarn start`.
+4. (Optional) Run the tests with `yarn test`.

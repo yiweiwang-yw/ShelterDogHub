@@ -120,6 +120,16 @@ describe("DogSearchPage", () => {
             expect(screen.getByText("Dog1")).toBeInTheDocument();
         });
     });
+    it("Dog Match button should be changed when there is a match", () => {
+        const key = `matchedDog-${mockUser.name}-${mockUser.email}`;
+
+        sessionStorage.setItem("user", JSON.stringify(mockUser));
+        sessionStorage.setItem(key, JSON.stringify(mockMatchedDog));
+
+        render(<DogSearchPage />);
+        expect(screen.getByText("Find a new match")).toBeInTheDocument();
+    });
+
 
     it("sets the matchedDog state if the user and matchedDog data are present in sessionStorage", () => {
         const key = `matchedDog-${mockUser.name}-${mockUser.email}`;
