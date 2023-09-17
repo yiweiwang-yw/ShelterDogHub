@@ -5,8 +5,8 @@ export const getBreeds = async () => {
 }
 
 export const searchDogs = async (
-    breeds: string[] = [],
-    zipCodes: string[] = [],
+    breeds?: string[],
+    zipCodes?: string[],
     ageMin?: number,
     ageMax?: number,
     size: number = 25,

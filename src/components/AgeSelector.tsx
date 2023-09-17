@@ -1,8 +1,4 @@
-import {
-    Typography,
-    Select,
-    MenuItem
-} from "@mui/material";
+import { Typography, Select, MenuItem } from "@mui/material";
 
 type AgeSelectorProps = {
     age: number | undefined;
@@ -14,8 +10,12 @@ const AgeSelector: React.FC<AgeSelectorProps> = ({ age, setAge, label }) => (
     <>
         <Typography variant="subtitle1">{label}:</Typography>
         <Select
-            value={age ? age : ""}
-            onChange={(e) => setAge(Number(e.target.value))}
+            value={age !== undefined ? age : ""}
+            onChange={(e) =>
+                setAge(
+                    e.target.value === "" ? undefined : Number(e.target.value)
+                )
+            }
             style={{ minWidth: "100px", marginRight: "10px" }}
         >
             <MenuItem value="">Any</MenuItem>

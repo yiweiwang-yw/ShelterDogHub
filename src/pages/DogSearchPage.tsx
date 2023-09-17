@@ -42,22 +42,28 @@ const DogSearchPage: React.FC = () => {
     const [ageMin, setAgeMin] = useState<number | undefined>();
     const [ageMax, setAgeMax] = useState<number | undefined>();
 
-    const fetchDogs = async () => {
-        const sortQuery = `breed:${sortOrder}`;
+    const fetchDogs = async (
+        breeds: string[], 
+        zipCodes: string[] | undefined, 
+        minAge: number | undefined, 
+        maxAge: number | undefined, 
+        order: "asc" | "desc"
+    ) => {
+        const sortQuery = `breed:${order}`;
         const response = await searchDogs(
-            selectedBreeds,
-            selectedZipCodes,
-            ageMin,
-            ageMax,
+            breeds,
+            zipCodes && zipCodes.length > 0 ? zipCodes : undefined,
+            minAge,
+            maxAge,
             25,
             requestedCursor,
             sortQuery
         );
         console.log(response.data);
-
+    
         setNextCursor(getCursorFromQueryString(response.data.next));
         setPrevCursor(getCursorFromQueryString(response.data.prev));
-
+    
         const dogDetails = await getDogs(response.data.resultIds);
         setDogs(dogDetails.data);
     };
@@ -84,7 +90,6 @@ const DogSearchPage: React.FC = () => {
             if (storedMatchedDog) {
                 setMatchedDog(JSON.parse(storedMatchedDog) as Dog);
             }
-            console.log("matched dog is", matchedDog);
         }
     }, []);
 
@@ -96,8 +101,14 @@ const DogSearchPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        fetchDogs();
-    }, [requestedCursor, sortOrder]);
+        fetchDogs(
+            selectedBreeds, 
+            selectedZipCodes, 
+            ageMin, 
+            ageMax, 
+            sortOrder
+        );
+    }, [requestedCursor, sortOrder]);      
 
     useEffect(() => {
         if (ageMin && ageMax && ageMin > ageMax) {
@@ -119,8 +130,13 @@ const DogSearchPage: React.FC = () => {
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         const zipCode = event.target.value.trim();
-        setSelectedZipCodes([zipCode]);
+        if (zipCode) {
+            setSelectedZipCodes([zipCode]);
+        } else {
+            setSelectedZipCodes([]);
+        }
     };
+    
 
     const handleNext = () => {
         if (nextCursor) {
@@ -186,7 +202,13 @@ const DogSearchPage: React.FC = () => {
     };
 
     const applyFilters = () => {
-        fetchDogs();
+        fetchDogs(
+            selectedBreeds, 
+            selectedZipCodes, 
+            ageMin, 
+            ageMax, 
+            sortOrder
+        );
     };
 
     const validateZipCode = (zipCode: string): boolean => {
@@ -200,7 +222,7 @@ const DogSearchPage: React.FC = () => {
             return;
         }
         applyFilters();
-    };
+    };    
 
     const resetFilters = () => {
         setSelectedBreeds([]);
@@ -208,8 +230,8 @@ const DogSearchPage: React.FC = () => {
         setAgeMin(undefined);
         setAgeMax(undefined);
         setSortOrder("asc");
-        fetchDogs();
-    };
+        fetchDogs([], [], undefined, undefined, "asc");
+    };  
 
     type MatchedDogDialogProps = {
         dog: Dog | null;
@@ -314,16 +336,16 @@ const DogSearchPage: React.FC = () => {
                         <MenuItem value="asc">Ascending</MenuItem>
                         <MenuItem value="desc">Descending</MenuItem>
                     </Select>
-
                     <Box className="flex items-center justify-between space-x-2">
                         <Button
+                            variant="contained"
                             onClick={() => setFavoritesDialogOpen(true)}
                             disabled={favorites.length === 0}
                         >
                             View Favorites
                         </Button>
 
-                        <Button onClick={findMatch}>
+                        <Button variant="contained" onClick={findMatch}>
                             {matchedDog ? "Find a new match" : "Find a Match"}
                         </Button>
 
@@ -343,7 +365,6 @@ const DogSearchPage: React.FC = () => {
 
                         <MatchedDogDialog dog={matchedDog} />
                     </Box>
-
                     <Dialog
                         fullScreen
                         open={favoritesDialogOpen}
@@ -372,8 +393,19 @@ const DogSearchPage: React.FC = () => {
                                 onFavorite={toggleFavorite}
                             />
                         </DialogContent>
+                        <DialogActions>
+                            <Button
+                                variant="contained"
+                                onClick={() => {
+                                    setFavorites([]);
+                                    sessionStorage.removeItem("favorites");
+                                    setFavoritesDialogOpen(false);
+                                }}
+                            >
+                                Clear Favorites
+                            </Button>
+                        </DialogActions>
                     </Dialog>
-
                     {dogs.length === 0 ? (
                         <Typography variant="h6">
                             No dogs are available
@@ -385,7 +417,6 @@ const DogSearchPage: React.FC = () => {
                             onFavorite={toggleFavorite}
                         />
                     )}
-
                     <CustomPagination
                         onNext={handleNext}
                         onPrev={handlePrev}
