@@ -2,6 +2,7 @@
 
 Welcome to the Dog Matcher App, an interactive platform that connects users with their potential companions. Browse available dogs, filter by breed, and find your perfect match!
 
+Live Project: https://shelter-dog-hub.vercel.app/
 ## Features
 
 ### User Authentication
