@@ -43,10 +43,10 @@ const DogSearchPage: React.FC = () => {
     const [ageMax, setAgeMax] = useState<number | undefined>();
 
     const fetchDogs = async (
-        breeds: string[], 
-        zipCodes: string[] | undefined, 
-        minAge: number | undefined, 
-        maxAge: number | undefined, 
+        breeds: string[],
+        zipCodes: string[] | undefined,
+        minAge: number | undefined,
+        maxAge: number | undefined,
         order: "asc" | "desc"
     ) => {
         const sortQuery = `breed:${order}`;
@@ -60,10 +60,10 @@ const DogSearchPage: React.FC = () => {
             sortQuery
         );
         console.log(response.data);
-    
+
         setNextCursor(getCursorFromQueryString(response.data.next));
         setPrevCursor(getCursorFromQueryString(response.data.prev));
-    
+
         const dogDetails = await getDogs(response.data.resultIds);
         setDogs(dogDetails.data);
     };
@@ -101,14 +101,8 @@ const DogSearchPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        fetchDogs(
-            selectedBreeds, 
-            selectedZipCodes, 
-            ageMin, 
-            ageMax, 
-            sortOrder
-        );
-    }, [requestedCursor, sortOrder]);      
+        fetchDogs(selectedBreeds, selectedZipCodes, ageMin, ageMax, sortOrder);
+    }, [requestedCursor, sortOrder]);
 
     useEffect(() => {
         if (ageMin && ageMax && ageMin > ageMax) {
@@ -136,7 +130,6 @@ const DogSearchPage: React.FC = () => {
             setSelectedZipCodes([]);
         }
     };
-    
 
     const handleNext = () => {
         if (nextCursor) {
@@ -202,13 +195,7 @@ const DogSearchPage: React.FC = () => {
     };
 
     const applyFilters = () => {
-        fetchDogs(
-            selectedBreeds, 
-            selectedZipCodes, 
-            ageMin, 
-            ageMax, 
-            sortOrder
-        );
+        fetchDogs(selectedBreeds, selectedZipCodes, ageMin, ageMax, sortOrder);
     };
 
     const validateZipCode = (zipCode: string): boolean => {
@@ -222,7 +209,7 @@ const DogSearchPage: React.FC = () => {
             return;
         }
         applyFilters();
-    };    
+    };
 
     const resetFilters = () => {
         setSelectedBreeds([]);
@@ -231,7 +218,7 @@ const DogSearchPage: React.FC = () => {
         setAgeMax(undefined);
         setSortOrder("asc");
         fetchDogs([], [], undefined, undefined, "asc");
-    };  
+    };
 
     type MatchedDogDialogProps = {
         dog: Dog | null;
@@ -279,6 +266,7 @@ const DogSearchPage: React.FC = () => {
                             options={breeds}
                             value={selectedBreeds}
                             onChange={handleBreedsChange}
+                            style={{ marginRight: "10px", width: "100%" }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -295,7 +283,7 @@ const DogSearchPage: React.FC = () => {
                             onChange={handleZipCodesChange}
                             placeholder="Enter Zip Code"
                             variant="outlined"
-                            style={{ marginRight: "10px", width: "150px" }}
+                            style={{ marginRight: "10px", width: "100%" }}
                             error={
                                 !validateZipCode(selectedZipCodes.toString()) &&
                                 selectedZipCodes.toString() !== ""
@@ -320,8 +308,12 @@ const DogSearchPage: React.FC = () => {
                             label="Age Max"
                         />
                     </Box>
-                    <Button onClick={resetFilters}>Reset Filters</Button>
-                    <Button onClick={handleSearchClick}>Apply Filters</Button>
+                    <Box className="flex items-center justify-between space-x-2 mt-4 w-full">
+                        <Button variant="contained" onClick={resetFilters}>Reset Filters</Button>
+                        <Button variant="contained" onClick={handleSearchClick}>
+                            Apply Filters
+                        </Button>
+                    </Box>
                 </Grid>
 
                 <Grid item xs={9}>
@@ -331,12 +323,12 @@ const DogSearchPage: React.FC = () => {
                         onChange={(e) =>
                             setSortOrder(e.target.value as "asc" | "desc")
                         }
-                        style={{ minWidth: "150px" }}
+                        className = 'w-1/4 mb-4'
                     >
                         <MenuItem value="asc">Ascending</MenuItem>
                         <MenuItem value="desc">Descending</MenuItem>
                     </Select>
-                    <Box className="flex items-center justify-between space-x-2">
+                    <Box className="flex items-center justify-between space-x-2 mb-4">
                         <Button
                             variant="contained"
                             onClick={() => setFavoritesDialogOpen(true)}

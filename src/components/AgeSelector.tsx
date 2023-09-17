@@ -16,7 +16,7 @@ const AgeSelector: React.FC<AgeSelectorProps> = ({ age, setAge, label }) => (
                     e.target.value === "" ? undefined : Number(e.target.value)
                 )
             }
-            style={{ minWidth: "100px", marginRight: "10px" }}
+            style={{ minWidth: "100%", marginRight: "10px" }}
         >
             <MenuItem value="">Any</MenuItem>
             {Array.from({ length: 21 }).map((_, index) => (
