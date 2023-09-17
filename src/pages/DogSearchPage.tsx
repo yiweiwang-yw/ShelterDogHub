@@ -368,9 +368,9 @@ const DogSearchPage: React.FC = () => {
                     >
                         <DialogTitle>
                             Your Favorited Dogs
-                            <IconButton
-                                edge="end"
+                            <Button
                                 color="inherit"
+
                                 onClick={() => setFavoritesDialogOpen(false)}
                                 aria-label="close"
                                 style={{
@@ -379,8 +379,8 @@ const DogSearchPage: React.FC = () => {
                                     top: "8px",
                                 }}
                             >
-                                <CloseIcon />
-                            </IconButton>
+                                Close
+                            </Button>
                         </DialogTitle>
                         <DialogContent>
                             <DogList
