@@ -22,6 +22,8 @@ export const logout = async () => {
             const { name, email } = JSON.parse(userData);
             const key = `matchedDog-${name}-${email}`;
             sessionStorage.removeItem(key);
+        }else{
+            return;
         }
 
         sessionStorage.removeItem("user");

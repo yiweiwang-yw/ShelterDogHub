@@ -41,6 +41,7 @@ const DogSearchPage: React.FC = () => {
     const [selectedZipCodes, setSelectedZipCodes] = useState<string[]>([]);
     const [ageMin, setAgeMin] = useState<number | undefined>();
     const [ageMax, setAgeMax] = useState<number | undefined>();
+    const [loading, setLoading] = useState<boolean>(true);
 
     const fetchDogs = async (
         breeds: string[],
@@ -49,6 +50,7 @@ const DogSearchPage: React.FC = () => {
         maxAge: number | undefined,
         order: "asc" | "desc"
     ) => {
+        setLoading(true);
         const sortQuery = `breed:${order}`;
         const response = await searchDogs(
             breeds,
@@ -59,13 +61,13 @@ const DogSearchPage: React.FC = () => {
             requestedCursor,
             sortQuery
         );
-        console.log(response.data);
 
         setNextCursor(getCursorFromQueryString(response.data.next));
         setPrevCursor(getCursorFromQueryString(response.data.prev));
 
         const dogDetails = await getDogs(response.data.resultIds);
         setDogs(dogDetails.data);
+        setLoading(false);
     };
 
     useEffect(() => {
@@ -309,7 +311,9 @@ const DogSearchPage: React.FC = () => {
                         />
                     </Box>
                     <Box className="flex items-center justify-between space-x-2 mt-4 w-full">
-                        <Button variant="contained" onClick={resetFilters}>Reset Filters</Button>
+                        <Button variant="contained" onClick={resetFilters}>
+                            Reset Filters
+                        </Button>
                         <Button variant="contained" onClick={handleSearchClick}>
                             Apply Filters
                         </Button>
@@ -323,7 +327,7 @@ const DogSearchPage: React.FC = () => {
                         onChange={(e) =>
                             setSortOrder(e.target.value as "asc" | "desc")
                         }
-                        className = 'w-1/4 mb-4'
+                        className="w-1/4 mb-4"
                     >
                         <MenuItem value="asc">Ascending</MenuItem>
                         <MenuItem value="desc">Descending</MenuItem>
@@ -398,7 +402,9 @@ const DogSearchPage: React.FC = () => {
                             </Button>
                         </DialogActions>
                     </Dialog>
-                    {dogs.length === 0 ? (
+                    {loading ? (
+                        <Typography variant="h6">Loading...</Typography>
+                    ) : dogs.length === 0 ? (
                         <Typography variant="h6">
                             No dogs are available
                         </Typography>

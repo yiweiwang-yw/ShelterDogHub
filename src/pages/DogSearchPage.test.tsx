@@ -1,9 +1,17 @@
-import {describe, expect, test} from '@jest/globals';
-import { render } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { render, screen, waitFor } from '@testing-library/react';
 import DogSearchPage from './DogSearchPage';
 
+
 describe('DogSearchPage', () => {
-  test('renders DogSearchPage component', () => {
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('renders DogSearchPage component', () => {
     render(<DogSearchPage />);
   });
+
+  
 });
