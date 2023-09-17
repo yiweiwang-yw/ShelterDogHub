@@ -1,16 +1,12 @@
-/* eslint-disable testing-library/no-node-access */
+
 import "@testing-library/jest-dom";
 import {
     render,
     screen,
     waitFor,
     fireEvent,
-    within,
-    act,
 } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import DogSearchPage from "../DogSearchPage";
-import * as apiModule from "../../api/index";
 import { getBreeds, searchDogs, getDogs, matchDogs } from "../../api/dogs";
 
 jest.mock("../../api/dogs");

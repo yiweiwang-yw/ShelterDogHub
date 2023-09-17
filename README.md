@@ -1,46 +1,55 @@
-# Getting Started with Create React App
+# Shelter Dog Hub
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Welcome to the Dog Matcher App, an interactive platform that connects users with their potential companions. Browse available dogs, filter by breed, and find your perfect match!
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### User Authentication
+Begin by entering your name and email on the login screen. This will authenticate you with our service, and you will be directed to the main search page.
 
-### `npm start`
+### Dog Search Page
+On this page, users can:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- Filter dogs by breed.
+- Navigate through paginated results.
+- Sort results alphabetically by breed (ascending or descending).
+- View detailed information about each dog
+- Favorite and unfavorite dogs from the search results.
+- Click Previous and Next buttons to navigate through the paginated results.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Advanced Filtering
+To refine your search, apply filters for:
 
-### `npm test`
+- Minimum age
+- Maximum age
+- Dog breed
+- Zip code
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Matching
+After selecting your favorites, generate a match to discover a single dog suggested for you. This recommendation is powered by our endpoint. Once you've found your match, you can:
 
-### `npm run build`
+- View detailed information about your matched dog.
+- Check out your list of favorited dogs.
+- Generate a new match if desired.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Additional Features besides general requirements
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Beyond the core requirements, the following features were implemented:
+  - A user can favorite and unfavorite dogs from the search results.
+  - A user can view a list of favorited dogs via a Dialog.
+  - A user can clear their list of favorited dogs inside the Dialog.
+  - A user can generate a new match if desired.
+  - A user can view detailed information about their matched dog.
+  - A user can filter dogs by minimum age.
+  - A user can filter dogs by maximum age.
+  - A user can reset all filters.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Multiple error handlings were also added. 
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Getting Started
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Clone the repository.
+2. Install the dependencies with `yarn install`.
+3. Run the application with `yarn run start`.
+4. (Optional) Run the tests with `yarn run test`.
