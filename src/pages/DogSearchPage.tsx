@@ -9,11 +9,13 @@ import {
     TextField,
     Box,
     Grid,
+    Snackbar
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import Alert from '@mui/material/Alert'; 
 import DogList from "../components/DogList";
 import AgeSelector from "../components/AgeSelector";
 import { Dog } from "../types/types";
@@ -40,6 +42,8 @@ const DogSearchPage: React.FC = () => {
     const [ageMin, setAgeMin] = useState<number | undefined>();
     const [ageMax, setAgeMax] = useState<number | undefined>();
     const [loading, setLoading] = useState<boolean>(true);
+    const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+    const [snackbarMessage, setSnackbarMessage] = React.useState("");
 
     const fetchDogs = async (
         breeds: string[],
@@ -49,7 +53,7 @@ const DogSearchPage: React.FC = () => {
         order: "asc" | "desc"
     ) => {
         setLoading(true);
-        const sortQuery = `breed:${order}`;
+        try{const sortQuery = `breed:${order}`;
         const response = await searchDogs(
             breeds,
             zipCodes && zipCodes.length > 0 ? zipCodes : undefined,
@@ -64,8 +68,15 @@ const DogSearchPage: React.FC = () => {
         setPrevCursor(getCursorFromQueryString(response.data.prev));
 
         const dogDetails = await getDogs(response.data.resultIds);
-        setDogs(dogDetails.data);
-        setLoading(false);
+        setDogs(dogDetails.data);}
+        catch(e){
+            console.log(e);
+            setSnackbarMessage("An error occurred while fetching dogs.");
+            setSnackbarOpen(true);
+        }
+        finally{
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -368,7 +379,6 @@ const DogSearchPage: React.FC = () => {
                             Your Favorited Dogs
                             <Button
                                 color="inherit"
-
                                 onClick={() => setFavoritesDialogOpen(false)}
                                 aria-label="close"
                                 style={{
@@ -421,6 +431,15 @@ const DogSearchPage: React.FC = () => {
                     />
                 </Grid>
             </Grid>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity="error">
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

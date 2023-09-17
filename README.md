@@ -32,9 +32,9 @@ After selecting your favorites, generate a match to discover a single dog sugges
 - Check out your list of favorited dogs.
 - Generate a new match if desired.
 
-## Additional Features besides general requirements
+## Additional Features beyond general requirements
 
-Beyond the core requirements, the following features were implemented:
+Beyond the core requirements, the following additional features were implemented:
   - A user can favorite and unfavorite dogs from the search results.
   - A user can view a list of favorited dogs via a Dialog.
   - A user can clear their list of favorited dogs inside the Dialog.
