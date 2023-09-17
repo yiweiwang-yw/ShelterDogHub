@@ -10,11 +10,9 @@ const AppHeader: React.FC = () => {
     const handleLogout = async () => {
         try {
             await logout();
-            // The user data has been cleared from sessionStorage in the logout function
             navigate("/");
         } catch (error) {
             console.error("Error during logout:", error);
-            // Optionally, you can show an error notification to the user
         }
     };
 
@@ -22,7 +20,7 @@ const AppHeader: React.FC = () => {
         <AppBar position="static" className="mb-4">
             <Toolbar>
                 <Typography variant="h6" className="flex-grow">
-                    Dog App
+                    Shelter Dog Hub
                 </Typography>
                 <IconButton color="inherit" onClick={handleLogout}>
                     <LogoutIcon />

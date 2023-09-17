@@ -1,6 +1,6 @@
 import React from "react";
-import DogCard from "../DogCard/DogCard";
-import { Dog } from "../../types/types";
+import DogCard from "./DogCard";
+import { Dog } from "../types/types";
 
 interface DogListProps {
     dogs: Dog[];

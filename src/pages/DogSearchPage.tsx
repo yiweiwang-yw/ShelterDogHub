@@ -5,8 +5,10 @@ import {
     Select,
     MenuItem,
     Button,
-    SelectChangeEvent,
+    Autocomplete,
+    TextField,
     Box,
+    Grid,
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -14,36 +16,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import Checkbox from "@mui/material/Checkbox";
-import ListItemText from "@mui/material/ListItemText";
-import DogList from "../components/DogList/DogList";
+import DogList from "../components/DogList";
+import AgeSelector from "../components/AgeSelector";
 import { Dog } from "../types/types";
 import { getBreeds, searchDogs, getDogs, matchDogs } from "../api/dogs";
-import CustomPagination from "../components/Pagination/CustomPagination";
-
-type AgeSelectorProps = {
-    age: number | undefined;
-    setAge: React.Dispatch<React.SetStateAction<number | undefined>>;
-    label: string;
-};
-
-const AgeSelector: React.FC<AgeSelectorProps> = ({ age, setAge, label }) => (
-    <>
-        <Typography variant="subtitle1">{label}:</Typography>
-        <Select
-            value={age ? age : ""}
-            onChange={(e) => setAge(Number(e.target.value))}
-            style={{ minWidth: "100px", marginRight: "10px" }}
-        >
-            <MenuItem value="">Any</MenuItem>
-            {Array.from({ length: 21 }).map((_, index) => (
-                <MenuItem key={index} value={index}>
-                    {index} {index === 1 ? "Year" : "Years"}
-                </MenuItem>
-            ))}
-        </Select>
-    </>
-);
+import CustomPagination from "../components/CustomPagination";
 
 const DogSearchPage: React.FC = () => {
     const [breeds, setBreeds] = useState<string[]>([]);
@@ -65,11 +42,32 @@ const DogSearchPage: React.FC = () => {
     const [ageMin, setAgeMin] = useState<number | undefined>();
     const [ageMax, setAgeMax] = useState<number | undefined>();
 
+    const fetchDogs = async () => {
+        const sortQuery = `breed:${sortOrder}`;
+        const response = await searchDogs(
+            selectedBreeds,
+            selectedZipCodes,
+            ageMin,
+            ageMax,
+            25,
+            requestedCursor,
+            sortQuery
+        );
+        console.log(response.data);
+
+        setNextCursor(getCursorFromQueryString(response.data.next));
+        setPrevCursor(getCursorFromQueryString(response.data.prev));
+
+        const dogDetails = await getDogs(response.data.resultIds);
+        setDogs(dogDetails.data);
+    };
+
     useEffect(() => {
-        async function fetchBreeds() {
+        const fetchBreeds = async () => {
             const response = await getBreeds();
             setBreeds(response.data);
-        }
+        };
+
         fetchBreeds();
     }, []);
     const getCursorFromQueryString = (queryString: string) => {
@@ -86,6 +84,7 @@ const DogSearchPage: React.FC = () => {
             if (storedMatchedDog) {
                 setMatchedDog(JSON.parse(storedMatchedDog) as Dog);
             }
+            console.log("matched dog is", matchedDog);
         }
     }, []);
 
@@ -97,34 +96,8 @@ const DogSearchPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        async function fetchDogs() {
-            const sortQuery = `breed:${sortOrder}`;
-            const response = await searchDogs(
-                selectedBreeds,
-                selectedZipCodes,
-                ageMin,
-                ageMax,
-                25,
-                requestedCursor,
-                sortQuery
-            );
-            console.log(response.data);
-
-            setNextCursor(getCursorFromQueryString(response.data.next));
-            setPrevCursor(getCursorFromQueryString(response.data.prev));
-
-            const dogDetails = await getDogs(response.data.resultIds);
-            setDogs(dogDetails.data);
-        }
         fetchDogs();
-    }, [
-        selectedBreeds,
-        selectedZipCodes,
-        ageMin,
-        ageMax,
-        requestedCursor,
-        sortOrder,
-    ]);
+    }, [requestedCursor, sortOrder]);
 
     useEffect(() => {
         if (ageMin && ageMax && ageMin > ageMax) {
@@ -138,22 +111,15 @@ const DogSearchPage: React.FC = () => {
         }
     }, [ageMax]);
 
-    const handleBreedsChange = (event: SelectChangeEvent<string[]>) => {
-        if (event.target.value.includes("Remove Selection")) {
-            setSelectedBreeds([]);
-        } else {
-            setSelectedBreeds(event.target.value as string[]);
-        }
+    const handleBreedsChange = (event: any, newValue: string[]) => {
+        setSelectedBreeds(newValue);
     };
 
     const handleZipCodesChange = (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
-        if (event.target.value.trim() === "") {
-            setSelectedZipCodes([]);
-        } else {
-            setSelectedZipCodes([event.target.value.trim()]);
-        }
+        const zipCode = event.target.value.trim();
+        setSelectedZipCodes([zipCode]);
     };
 
     const handleNext = () => {
@@ -192,14 +158,19 @@ const DogSearchPage: React.FC = () => {
     };
 
     const findMatch = async () => {
+        if (favorites.length === 0) {
+            alert("Please favorite a dog first before finding a match.");
+            return;
+        }
+        
         if (dogs.length === 0) {
             return;
         }
+        
         const dogIds = dogs.map((dog) => dog.id);
         const match = await matchDogs(dogIds);
-        const matchedDogDetails = dogs.find(
-            (dog) => dog.id === match.data.match
-        );
+        const matchedDogDetails = dogs.find((dog) => dog.id === match.data.match);
+        
         if (matchedDogDetails) {
             const userData = sessionStorage.getItem("user");
             if (userData) {
@@ -211,6 +182,24 @@ const DogSearchPage: React.FC = () => {
             }
         }
     };
+    
+
+    const applyFilters = () => {
+        fetchDogs();
+    };
+
+    const validateZipCode = (zipCode: string): boolean => {
+        return /^\d{5}$/.test(zipCode);
+    };
+
+    const handleSearchClick = () => {
+        const zip = selectedZipCodes.toString();
+        if (zip && !validateZipCode(zip)) {
+            alert("Please enter a valid 5-digit Zip Code.");
+            return;
+        }
+        applyFilters();
+    };
 
     const resetFilters = () => {
         setSelectedBreeds([]);
@@ -218,160 +207,185 @@ const DogSearchPage: React.FC = () => {
         setAgeMin(undefined);
         setAgeMax(undefined);
         setSortOrder("asc");
+        fetchDogs();
     };
 
     return (
         <Container>
-            <Box className="flex items-center space-x-2">
-                <Typography variant="subtitle1">Breeds:</Typography>
-                <Select
-                    multiple
-                    value={selectedBreeds}
-                    onChange={handleBreedsChange}
-                    renderValue={(selected) =>
-                        (selected as string[]).join(", ")
-                    }
-                    style={{ minWidth: "150px" }}
-                >
-                    <MenuItem value="Remove Selection">
-                        <Checkbox
-                            checked={
-                                selectedBreeds.length === breeds.length ||
-                                selectedBreeds.includes("Remove Selection")
+            <Grid container spacing={3}>
+                <Grid item xs={3}>
+                    <Box>
+                        <Typography variant="subtitle1">Breeds:</Typography>
+                        <Autocomplete
+                            multiple
+                            options={breeds}
+                            value={selectedBreeds}
+                            onChange={handleBreedsChange}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    variant="outlined"
+                                    placeholder="Choose Breeds"
+                                />
+                            )}
+                        />
+                    </Box>
+                    <Box>
+                        <Typography variant="subtitle1">Zip Code:</Typography>
+                        <TextField
+                            value={selectedZipCodes.toString()}
+                            onChange={handleZipCodesChange}
+                            placeholder="Enter Zip Code"
+                            variant="outlined"
+                            style={{ marginRight: "10px", width: "150px" }}
+                            error={
+                                !validateZipCode(selectedZipCodes.toString()) &&
+                                selectedZipCodes.toString() !== ""
+                            }
+                            helperText={
+                                !validateZipCode(selectedZipCodes.toString()) &&
+                                selectedZipCodes.toString() !== ""
+                                    ? "Enter a valid 5-digit Zip Code"
+                                    : ""
                             }
                         />
-                        <ListItemText primary="Remove Selection" />
-                    </MenuItem>
-                    {breeds.map((breed) => (
-                        <MenuItem key={breed} value={breed}>
-                            <Checkbox
-                                checked={selectedBreeds.includes(breed)}
-                            />
-                            <ListItemText primary={breed} />
-                        </MenuItem>
-                    ))}
-                </Select>
-
-                <Typography variant="subtitle1">Zip Code:</Typography>
-                <input
-                    type="text"
-                    value={selectedZipCodes}
-                    onChange={handleZipCodesChange}
-                    placeholder="Enter Zip Code"
-                    style={{ marginRight: "10px", padding: "5px" }}
-                />
-
-                <AgeSelector age={ageMin} setAge={setAgeMin} label="Age Min" />
-                <AgeSelector age={ageMax} setAge={setAgeMax} label="Age Max" />
-                <Button onClick={resetFilters}>Reset Filters</Button>
-                <Typography variant="subtitle1">Sort By:</Typography>
-                <Select
-                    value={sortOrder}
-                    onChange={(e) =>
-                        setSortOrder(e.target.value as "asc" | "desc")
-                    }
-                    style={{ minWidth: "150px" }}
-                >
-                    <MenuItem value="asc">Ascending</MenuItem>
-                    <MenuItem value="desc">Descending</MenuItem>
-                </Select>
-            </Box>
-
-            <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                my={2}
-            >
-                {matchedDog && (
-                    <Box>
-                        <Typography variant="subtitle1">
-                            Matched Dog:
-                        </Typography>
-                        <Typography>
-                            {matchedDog.name} - {matchedDog.breed}
-                        </Typography>
                     </Box>
-                )}
-                <Button
-                    onClick={() => setFavoritesDialogOpen(true)}
-                    disabled={favorites.length === 0}
-                >
-                    View Favorites
-                </Button>
-            </Box>
+                    <Box>
+                        <AgeSelector
+                            age={ageMin}
+                            setAge={setAgeMin}
+                            label="Age Min"
+                        />
+                        <AgeSelector
+                            age={ageMax}
+                            setAge={setAgeMax}
+                            label="Age Max"
+                        />
+                    </Box>
+                    <Button onClick={resetFilters}>Reset Filters</Button>
+                    <Button onClick={handleSearchClick}>Apply Filters</Button>
+                </Grid>
 
-            <Dialog
-                fullScreen
-                open={favoritesDialogOpen}
-                onClose={() => setFavoritesDialogOpen(false)}
-            >
-                <DialogTitle>
-                    Your Favorited Dogs
-                    <IconButton
-                        edge="end"
-                        color="inherit"
-                        onClick={() => setFavoritesDialogOpen(false)}
-                        aria-label="close"
-                        style={{
-                            position: "absolute",
-                            right: "8px",
-                            top: "8px",
-                        }}
+                <Grid item xs={9}>
+                    <Typography variant="subtitle1">Sort By:</Typography>
+                    <Select
+                        value={sortOrder}
+                        onChange={(e) =>
+                            setSortOrder(e.target.value as "asc" | "desc")
+                        }
+                        style={{ minWidth: "150px" }}
                     >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent>
-                    <DogList
-                        dogs={favorites}
-                        favorites={favorites}
-                        onFavorite={toggleFavorite}
-                    />
-                </DialogContent>
-            </Dialog>
+                        <MenuItem value="asc">Ascending</MenuItem>
+                        <MenuItem value="desc">Descending</MenuItem>
+                    </Select>
 
-            {dogs.length === 0 ? (
-                <Typography variant="h6">No dogs are available</Typography>
-            ) : (
-                <DogList
-                    dogs={dogs}
-                    favorites={favorites}
-                    onFavorite={toggleFavorite}
-                />
-            )}
-
-            <CustomPagination
-                onNext={handleNext}
-                onPrev={handlePrev}
-                hasNext={!!nextCursor}
-                hasPrev={cursors.length > 0 || !!prevCursor}
-            />
-
-            <Button onClick={findMatch}>Find a Match</Button>
-            <Dialog
-                open={isMatchDialogOpen}
-                onClose={() => setIsMatchDialogOpen(false)}
-            >
-                <DialogTitle>Your Matched Dog for Adoption</DialogTitle>
-                <DialogContent>
-                    {matchedDog && (
-                        <div>
-                            <Typography variant="h6">
-                                {matchedDog.name}
-                            </Typography>
-                            <Typography variant="body1">
-                                {matchedDog.breed}
-                            </Typography>
+                    <Box className="flex items-center justify-between space-x-2">
+                        <div className="flex items-center space-x-2">
+                            {matchedDog && (
+                                <Box>
+                                    <Typography variant="subtitle1">
+                                        Matched Dog:
+                                    </Typography>
+                                    <Typography>
+                                        {matchedDog.name} - {matchedDog.breed}
+                                    </Typography>
+                                </Box>
+                            )}
                         </div>
+
+                        <Button
+                                onClick={() => setFavoritesDialogOpen(true)}
+                                disabled={favorites.length === 0}
+                            >
+                                View Favorites
+                            </Button>
+                        <Button onClick={findMatch}>Find a Match</Button>
+                        <Dialog
+                            open={isMatchDialogOpen}
+                            onClose={() => setIsMatchDialogOpen(false)}
+                        >
+                            <DialogTitle>
+                                Your Matched Dog for Adoption
+                            </DialogTitle>
+                            <DialogContent>
+                                {matchedDog && (
+                                    <div>
+                                        <Typography variant="h6">
+                                            {matchedDog.name}
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            {matchedDog.breed}
+                                        </Typography>
+                                        <Typography>{`Age: ${matchedDog.age} years`}</Typography>
+                                        <Typography>{`Zip Code: ${matchedDog.zip_code}`}</Typography>
+                                        <img
+                                            src={matchedDog.img}
+                                            alt={matchedDog.name}
+                                            className="w-full h-full object-cover max-w-sm mx-auto"
+                                        />
+                                    </div>
+                                )}
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    onClick={() => setIsMatchDialogOpen(false)}
+                                >
+                                    Close
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                    </Box>
+
+                    <Dialog
+                        fullScreen
+                        open={favoritesDialogOpen}
+                        onClose={() => setFavoritesDialogOpen(false)}
+                    >
+                        <DialogTitle>
+                            Your Favorited Dogs
+                            <IconButton
+                                edge="end"
+                                color="inherit"
+                                onClick={() => setFavoritesDialogOpen(false)}
+                                aria-label="close"
+                                style={{
+                                    position: "absolute",
+                                    right: "8px",
+                                    top: "8px",
+                                }}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </DialogTitle>
+                        <DialogContent>
+                            <DogList
+                                dogs={favorites}
+                                favorites={favorites}
+                                onFavorite={toggleFavorite}
+                            />
+                        </DialogContent>
+                    </Dialog>
+
+                    {dogs.length === 0 ? (
+                        <Typography variant="h6">
+                            No dogs are available
+                        </Typography>
+                    ) : (
+                        <DogList
+                            dogs={dogs}
+                            favorites={favorites}
+                            onFavorite={toggleFavorite}
+                        />
                     )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsMatchDialogOpen(false)}>
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
+
+                    <CustomPagination
+                        onNext={handleNext}
+                        onPrev={handlePrev}
+                        hasNext={!!nextCursor}
+                        hasPrev={cursors.length > 0 || !!prevCursor}
+                    />
+                </Grid>
+            </Grid>
         </Container>
     );
 };

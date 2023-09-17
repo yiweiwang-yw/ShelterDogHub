@@ -1,5 +1,5 @@
 import React from 'react';
-import { DogCardProps } from '../../types/types';
+import { DogCardProps } from '../types/types';
 import { Card, CardContent, Typography, Button } from '@mui/material';
 
 const DogCard: React.FC<DogCardProps> = ({ name, breed, age, zip_code, img, favorite, onFavorite }) => {
