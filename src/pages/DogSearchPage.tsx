@@ -162,15 +162,17 @@ const DogSearchPage: React.FC = () => {
             alert("Please favorite a dog first before finding a match.");
             return;
         }
-        
+
         if (dogs.length === 0) {
             return;
         }
-        
+
         const dogIds = dogs.map((dog) => dog.id);
         const match = await matchDogs(dogIds);
-        const matchedDogDetails = dogs.find((dog) => dog.id === match.data.match);
-        
+        const matchedDogDetails = dogs.find(
+            (dog) => dog.id === match.data.match
+        );
+
         if (matchedDogDetails) {
             const userData = sessionStorage.getItem("user");
             if (userData) {
@@ -182,7 +184,6 @@ const DogSearchPage: React.FC = () => {
             }
         }
     };
-    
 
     const applyFilters = () => {
         fetchDogs();
@@ -208,6 +209,41 @@ const DogSearchPage: React.FC = () => {
         setAgeMax(undefined);
         setSortOrder("asc");
         fetchDogs();
+    };
+
+    type MatchedDogDialogProps = {
+        dog: Dog | null;
+    };
+
+    const MatchedDogDialog: React.FC<MatchedDogDialogProps> = ({ dog }) => {
+        return (
+            <Dialog
+                open={isMatchDialogOpen}
+                onClose={() => setIsMatchDialogOpen(false)}
+            >
+                <DialogTitle>Your Matched Dog for Adoption</DialogTitle>
+                <DialogContent>
+                    {dog && (
+                        <div>
+                            <Typography variant="h6">{dog.name}</Typography>
+                            <Typography variant="body1">{dog.breed}</Typography>
+                            <Typography>{`Age: ${dog.age} years`}</Typography>
+                            <Typography>{`Zip Code: ${dog.zip_code}`}</Typography>
+                            <img
+                                src={dog.img}
+                                alt={dog.name}
+                                className="w-full h-full object-cover max-w-sm mx-auto"
+                            />
+                        </div>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsMatchDialogOpen(false)}>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        );
     };
 
     return (
@@ -280,60 +316,32 @@ const DogSearchPage: React.FC = () => {
                     </Select>
 
                     <Box className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                            {matchedDog && (
-                                <Box>
-                                    <Typography variant="subtitle1">
-                                        Matched Dog:
-                                    </Typography>
-                                    <Typography>
-                                        {matchedDog.name} - {matchedDog.breed}
-                                    </Typography>
-                                </Box>
-                            )}
-                        </div>
-
                         <Button
-                                onClick={() => setFavoritesDialogOpen(true)}
-                                disabled={favorites.length === 0}
-                            >
-                                View Favorites
-                            </Button>
-                        <Button onClick={findMatch}>Find a Match</Button>
-                        <Dialog
-                            open={isMatchDialogOpen}
-                            onClose={() => setIsMatchDialogOpen(false)}
+                            onClick={() => setFavoritesDialogOpen(true)}
+                            disabled={favorites.length === 0}
                         >
-                            <DialogTitle>
-                                Your Matched Dog for Adoption
-                            </DialogTitle>
-                            <DialogContent>
-                                {matchedDog && (
-                                    <div>
-                                        <Typography variant="h6">
-                                            {matchedDog.name}
-                                        </Typography>
-                                        <Typography variant="body1">
-                                            {matchedDog.breed}
-                                        </Typography>
-                                        <Typography>{`Age: ${matchedDog.age} years`}</Typography>
-                                        <Typography>{`Zip Code: ${matchedDog.zip_code}`}</Typography>
-                                        <img
-                                            src={matchedDog.img}
-                                            alt={matchedDog.name}
-                                            className="w-full h-full object-cover max-w-sm mx-auto"
-                                        />
-                                    </div>
-                                )}
-                            </DialogContent>
-                            <DialogActions>
-                                <Button
-                                    onClick={() => setIsMatchDialogOpen(false)}
-                                >
-                                    Close
-                                </Button>
-                            </DialogActions>
-                        </Dialog>
+                            View Favorites
+                        </Button>
+
+                        <Button onClick={findMatch}>
+                            {matchedDog ? "Find a new match" : "Find a Match"}
+                        </Button>
+
+                        {matchedDog ? (
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => setIsMatchDialogOpen(true)}
+                            >
+                                View Matched Dog
+                            </Button>
+                        ) : (
+                            <Button variant="contained" disabled>
+                                View Matched Dog
+                            </Button>
+                        )}
+
+                        <MatchedDogDialog dog={matchedDog} />
                     </Box>
 
                     <Dialog
