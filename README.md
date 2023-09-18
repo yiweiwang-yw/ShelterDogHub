@@ -45,7 +45,7 @@ Beyond the core requirements, the following additional features were implemented
   - A user can filter dogs by maximum age.
   - A user can reset all filters.
 
-Multiple error handlings were also added. 
+Multiple error handlings and testings were also added. 
 
 
 ## Getting Started
